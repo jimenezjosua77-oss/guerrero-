@@ -1,0 +1,28 @@
+{
+  "entities": {
+    "UserProgress": {
+      "title": "User Progress",
+      "description": "Stores the user's game progress, high scores, and rewards.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "description": "The unique identifier for the user." },
+        "highScore": { "type": "integer", "description": "The user's highest score." },
+        "currentLevel": { "type": "integer", "description": "The highest level the user has reached." },
+        "rewards": { "type": "integer", "description": "Total rewards (coins/points) collected." },
+        "totalWords": { "type": "integer", "description": "Total words typed correctly." },
+        "bestWpm": { "type": "integer", "description": "Highest words per minute recorded." },
+        "averageAccuracy": { "type": "number", "description": "Average typing accuracy percentage." },
+        "displayName": { "type": "string", "description": "User's display name for leaderboard." },
+        "photoURL": { "type": "string", "description": "User's profile photo URL." },
+        "lastUpdated": { "type": "string", "format": "date-time", "description": "When the progress was last saved." }
+      },
+      "required": ["uid", "highScore", "currentLevel", "rewards"]
+    }
+  },
+  "firestore": {
+    "/users/{uid}": {
+      "schema": "UserProgress",
+      "description": "Collection of user progress documents."
+    }
+  }
+}

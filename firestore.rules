@@ -1,0 +1,50 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: users
+    // Document ID: {uid}
+    // Fields:
+    //   - uid: string (required) - The user's unique ID
+    //   - highScore: number (required) - Highest score achieved
+    //   - currentLevel: number (required) - Highest level reached
+    //   - rewards: number (required) - Total rewards collected
+    //   - lastUpdated: timestamp (optional) - Last update time
+    //
+    // ===============================================================
+
+    // Helper Functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isValidUserProgress(data) {
+      return data.keys().hasAll(['uid', 'highScore', 'currentLevel', 'rewards']) &&
+             data.uid is string &&
+             data.highScore is number && data.highScore >= 0 &&
+             data.currentLevel is number && data.currentLevel >= 1 &&
+             data.rewards is number && data.rewards >= 0 &&
+             (!('totalWords' in data) || data.totalWords is number) &&
+             (!('bestWpm' in data) || data.bestWpm is number) &&
+             (!('averageAccuracy' in data) || data.averageAccuracy is number) &&
+             (!('displayName' in data) || data.displayName is string) &&
+             (!('photoURL' in data) || data.photoURL is string);
+    }
+
+    match /users/{userId} {
+      // Allow reading for leaderboard
+      allow read: if isAuthenticated();
+      allow create: if isOwner(userId) && isValidUserProgress(request.resource.data);
+      allow update: if isOwner(userId) && isValidUserProgress(request.resource.data);
+      allow delete: if false;
+    }
+  }
+}
